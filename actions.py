@@ -17,10 +17,9 @@ def track_face(args):
         print "Could not create proxy"
         print "Error was: " + exception.message
 
-    motionProxy.setStiffnesses("Head", 1.0)
+    motionProxy.stiffnessInterpolation("Head", 1.0, 1.0)
     # Example showing a slow, relative move of "HeadYaw".
     # Calling this multiple times will move the head further.
-    names = "HeadYaw"
     step = 1.00  # 0.25
     fractionMaxSpeed = 0.05
 
@@ -35,15 +34,16 @@ def track_face(args):
     dirChange = 0
     found = False
     # Set head to default yaw and change pitch to catch faces
-    motionProxy.setAngles(names, 0.0, fractionMaxSpeed)
+    motionProxy.setAngles("HeadYaw", 0.0, fractionMaxSpeed)
     motionProxy.setAngles("HeadPitch", -0.35, fractionMaxSpeed)
     print "Moving head to default position..."
-    while motionProxy.getAngles(names, True)[0] != 0.0:
+    while motionProxy.getAngles("HeadYaw", True)[0] != 0.0:
         pass
 
     while dirChange != 2 and not found:
-        motionProxy.changeAngles(names, step, fractionMaxSpeed)
-        while motionProxy.getAngles(names, True)[0] != currentAngle[0] + step:
+        motionProxy.changeAngles("HeadYaw", step, fractionMaxSpeed)
+        while motionProxy.getAngles("HeadYaw",
+                                    True)[0] != currentAngle[0] + step:
             pass
         time.sleep(2.0)
         # Get current target position
@@ -52,25 +52,26 @@ def track_face(args):
             found = True
             print "Target found at position " + position
 
-        currentAngle = motionProxy.getAngles(names, True)
+        currentAngle = motionProxy.getAngles("HeadYaw", True)
         print "Head yaw: "
         print currentAngle
         if abs(currentAngle[0]) == 2.0:
             step = -step
             dirChange += 1
-            motionProxy.setAngles(names, 0.0, fractionMaxSpeed)
-            while motionProxy.getAngles(names, True)[0] != 0.0:
+            motionProxy.setAngles("HeadYaw", 0.0, fractionMaxSpeed)
+            while motionProxy.getAngles("HeadYaw", True)[0] != 0.0:
                 pass
-            currentAngle = motionProxy.getAngles(names, True)
+            currentAngle = motionProxy.getAngles("HeadYaw", True)
 
     # Stop tracker.
     trackerProxy.stopTracker()
     trackerProxy.unregisterAllTargets()
     # Return head to default position
-    motionProxy.setAngles(names, 0, fractionMaxSpeed)
-    while motionProxy.getAngles(names, True)[0] != 0.0:
+    motionProxy.setAngles("HeadYaw", 0.0, fractionMaxSpeed)
+    motionProxy.setAngles("HeadPitch", 0.0, fractionMaxSpeed)
+    while motionProxy.getAngles("HeadYaw", True)[0] != 0.0:
         pass
-    motionProxy.setStiffnesses("Head", 0.0)
+    motionProxy.stiffnessInterpolation("Head", 0.0, 1.0)
 
     if not found:
         print "Target not found"
@@ -92,9 +93,9 @@ def move_to(args):
         motionProxy.wakeUp()
         motionProxy.moveInit()
         ttsProxy.say("Mi muovo")
-        actionID = motionProxy.post.moveTo(args[0] - safetyDistance,
+        actionId = motionProxy.post.moveTo(args[0] - safetyDistance,
                                            args[1] - safetyDistance, args[2])
-        motionProxy.wait(actionID, 0)
+        motionProxy.wait(actionId, 0)
         ttsProxy.say("Sono arrivato")
     except Exception as exception:
         print "Something's wrong :/"
@@ -116,21 +117,23 @@ def main():
     global PORT
 
     robotIP = "127.0.0.1"
-    PORT = 6048
+    PORT = 61306
     print robotIP, PORT
 
     try:
-        tts = ALProxy("ALTextToSpeech", robotIP, PORT)
-
+        ttsProxy = ALProxy("ALTextToSpeech", robotIP, PORT)
+        motionProxy = ALProxy("ALMotion", robotIP, PORT)
     except Exception as exception:
         print "Could not create a connection, check the arguments: " + sys.argv[0] + " [IP] [PORT]"
         print "Error was: " + exception.message
         sys.exit()
-
-    tts.say("Ciao a tutti")
+    if not motionProxy.robotIsWakeUp():
+        actionId = motionProxy.wakeUp()
+        motionProxy.wait(actionId, 0)
+    ttsProxy.say("Ciao a tutti, sono pronto")
     args_to_send = []
     while True:
-        tts.say("Cosa devo fare?")
+        ttsProxy.say("Cosa devo fare?")
         # LISTEN the speech
         # TRANSLATE the speech to commands
         # GENERATE plans for the commands
