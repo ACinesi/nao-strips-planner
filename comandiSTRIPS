@@ -1,0 +1,23 @@
+-Prendi la palla
+
+AZIONE: prendi(palla)
+SE: manno(chiusa) and mano(vuota)
+ALLORA: mano(aperta) and palla_in_mano and mano(chiusa)
+
+-Lascia la palla
+
+AZIONE: lascia(palla)
+SE: palla_in_mano and mano(chiusa)
+ALLORA: mano(aperta) and mano(vuota)
+
+-Cerca persona
+
+AZIONE: cerca(persona)
+SE: in_piedi and testa_alta 
+ALLORA: posizione_conosciuta(persona)
+
+-Vai in X,Y
+
+AZIONE: vai_in(X,Y)
+SE: in_piedi and testa_normale
+ALLORA: sei_in(X,Y)
