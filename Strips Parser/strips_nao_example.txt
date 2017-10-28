@@ -1,7 +1,7 @@
 Initial state: BallAt(B), At(A), Level(high), Hand(empty)
 Goal state:    Bring(Ball), At(A)
     
-Actions 
+Actions:
         // move from X to Y
         Move(X, Y)
         Preconditions:  At(X), !Level(low)
@@ -28,6 +28,7 @@ Actions
         Postconditions: Hand(full), !Hand(empty)
 
                
+
 
 
                
