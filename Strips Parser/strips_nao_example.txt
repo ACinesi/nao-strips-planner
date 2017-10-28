@@ -1,29 +1,33 @@
 Initial state: BallAt(B), At(A), Level(high), Hand(empty)
 Goal state:    Bring(Ball), At(A)
+    
+Actions 
+        // move from X to Y
+        Move(X, Y)
+        Preconditions:  At(X), !Level(low)
+        Postconditions: !At(X), At(Y)
+               
+        // sit up
+        SitUp(Location)
+        Preconditions:  At(Location), Level(low)
+        Postconditions: Level(high), !Level(low)
+               
+        // sit down 
+        SitDown(Location)
+        Preconditions:  At(Location), Level(high)
+        Postconditions: Level(low), !Level(high) 
+               
+        // move NAO and ball from X to Y
+        ReturnNWB(X, Y)
+        Preconditions:  At(X), BallAt(X), Hand(full), !Level(low)
+        Postconditions: BallAt(Y), !BallAt(X), At(Y), !At(X), Bring(Ball)
+               
+        // take the ball
+        TakeBall(Location)
+        Preconditions:  BallAt(Location), At(Location), !Level(high), Hand(empty)
+        Postconditions: Hand(full), !Hand(empty)
 
-Actions:
-               // move from X to Y
-               Move(X, Y)
-               Preconditions:  At(X), !Level(low)
-               Postconditions: !At(X), At(Y)
                
-               // sit up
-               SitUp(Location)
-               Preconditions:  At(Location), Level(low)
-               Postconditions: Level(high), !Level(low)
-               
-               // sit down 
-               SitDown(Location)
-               Preconditions:  At(Location), Level(high)
-               Postconditions: Level(low), !Level(high)
-               
-               // move NAO and ball from X to Y
-               ReturnNWB(X, Y)
-               Preconditions:  At(X), BallAt(X), Hand(full), !Level(low)
-               Postconditions: BallAt(Y), !BallAt(X), At(Y), !At(X), Bring(Ball)
-               
-               // take the ball
-               TakeBall(Location)
-               Preconditions:  BallAt(Location), At(Location), !Level(high), Hand(empty)
-               Postconditions: Hand(full), !Hand(empty)
+
+
                
