@@ -21,7 +21,3 @@ ALLORA: posizione_conosciuta(persona)
 AZIONE: vai_in(X,Y)
 SE: in_piedi and testa_normale
 ALLORA: sei_in(X,Y)
-
-
-
-ciao andrea
