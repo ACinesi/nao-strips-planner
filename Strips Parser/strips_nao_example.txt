@@ -1,41 +1,38 @@
-Initial state:  At(A), Level(high), Hand(empty)
+Initial state:  At(A), Posture(low), Hand(empty)
 Goal state:     Bring(Ball)
 
 Actions:
         // move from X to Y
         Move(X, Y)
-        Preconditions:  At(X), !Level(low)
+        Preconditions:  At(X), Posture(high)
         Postconditions: !At(X), At(Y)
                
-        // stand up
-        StandUp(Location)
-        Preconditions:  At(Location), Level(low)
-        Postconditions: Level(high), !Level(low)
-               
-        // sit down 
-        SitDown(Location)
-        Preconditions:  At(Location), Level(high)
-        Postconditions: Level(low), !Level(high)  
+        // go to posture Post 
+        GoToPosture(Post,Location)
+        Preconditions:  At(Location), !Posture(Post)
+        Postconditions: Posture(Post)
                
         // take the ball
         TakeBall(Location)
-        Preconditions:  BallAt(Location), At(Location),Hand(empty), !Level(low)
+        Preconditions:  BallAt(Location), At(Location),Hand(empty), Posture(high)
         Postconditions: Hand(full), !Hand(empty), Bring(Ball)
 
         // give the ball
         GiveBall(Location)
-        Preconditions:  Bring(Ball), Hand(full), !Level(low), At(Location)
+        Preconditions:  Bring(Ball), Hand(full), Posture(high), At(Location)
         Postconditions: !Bring(Ball), !Hand(full), Hand(empty)
 
         // find a person
         FindPerson(Name,Location)
-        Preconditions:  !Level(low)
+        Preconditions:  Posture(high)
         Postconditions: PersonAt(Name,Location)
 
         // find a ball
         FindBall(Location)
-        Preconditions:  !Level(low),Hand(empty)
+        Preconditions:  Posture(high),Hand(empty)
         Postconditions: BallAt(Location)
+
+
    
         
 
