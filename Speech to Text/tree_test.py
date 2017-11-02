@@ -12,7 +12,7 @@ class Node(object):
 
 start = Node("start")
 take = Node("take")
-move = Node("move")
+move = Node("move")          sdsdsdsdsdasd
 the = Node("the")
 to = Node("to")
 ball = Node("ball", True, "bring(Ball)")

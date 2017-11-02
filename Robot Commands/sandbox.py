@@ -5,6 +5,7 @@ from naoqi import ALBroker, ALModule, ALProxy
 
 global Nao
 
+
 class Nao(ALModule):
     """Basic class for interaction to NAO Robot"""
 
@@ -112,7 +113,7 @@ class Nao(ALModule):
         self.tts_service.say("Mostrami la palla")
         while self.not_detected:
             time.sleep(1.0)
-            self.memory_service.raiseEvent("redBallDetected",1.0)
+            self.memory_service.raiseEvent("redBallDetected", 1.0)
         self.not_detected = False
 
     def redball_detected(self, event_name, value):
