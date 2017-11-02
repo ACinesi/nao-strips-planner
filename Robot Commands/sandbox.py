@@ -1,33 +1,36 @@
 import argparse
-import pprint
 import time
-from naoqi import ALProxy
-from naoqi import ALBroker
-from naoqi import ALModule
 
-Nao = None
-memory_service = None
-not_touched = True
+from naoqi import ALBroker, ALModule, ALProxy
 
+global Nao
 
 class Nao(ALModule):
+    """Basic class for interaction to NAO Robot"""
+
     def __init__(self, name="Nao"):
         ALModule.__init__(self, name)
         self.name = name
         self.hand_full_threshold = 0.25
         self.tts_service = ALProxy("ALTextToSpeech")
+        self.memory_service = ALProxy("ALMemory")
+        self.not_touched = True
+        self.not_detected = True
 
     def get_posture(self):
+        """Get current NAO posture"""
         posture_service = ALProxy("ALRobotPosture")
         posture = posture_service.getPosture()
         return posture
 
     def go_to_posture(self, posture_name):
+        """Make NAO assume a desired posture"""
         posture_service = ALProxy("ALRobotPosture")
         result = posture_service.goToPosture(posture_name, 1.0)
         return result
 
     def hand_full(self):
+        """Check if the right hand is full,grasping something"""
         motion_service = ALProxy("ALMotion")
         motion_service.setAngles("RHand", 0.0, 0.25)
         time.sleep(2.0)
@@ -41,6 +44,7 @@ class Nao(ALModule):
 
     #Actions
     def move(self, destination):
+        """Move NAO to a position relative to NAO frame"""
         x = destination[0]
         y = destination[1]
         #theta=math.pi/2 se ci vengono fornite solo x e y
@@ -51,23 +55,22 @@ class Nao(ALModule):
         self.tts_service.say("Sono arrivata")
 
     def take_ball(self):
+        """Make NAO capable of taking a red ball (Touch the head after putting the ball on its hand)"""
         names = ["RShoulderPitch", "RWristYaw", "RElbowYaw", "RHand"]
         angles = [0.26, 1.22, 1.74, 1.00]
         fraction_max_speed = 0.2
+        self.wait_redball()
         motion_service = ALProxy("ALMotion")
         motion_service.setStiffnesses("RArm", 1.0)
         motion_service.setAngles(names, angles, fraction_max_speed)
         time.sleep(2.0)
-        self.tts_service.say("Sono pronta")
-        global memory_service
-        memory_service = ALProxy("ALMemory")
-        memory_service.subscribeToEvent("MiddleTactilTouched", self.name,
-                                        "head_touched")
-        global not_touched
-        while not_touched:
+        self.memory_service.subscribeToEvent("MiddleTactilTouched", self.name,
+                                             "head_touched")
+
+        while self.not_touched:
             time.sleep(4.0)
-            memory_service.raiseEvent("MiddleTactilTouched", 1.0)
-        not_touched = True
+            self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
+        self.not_touched = True
         motion_service.setAngles("RHand", 0.00, fraction_max_speed)
         time.sleep(1.0)
         names = names[0:3]
@@ -77,6 +80,7 @@ class Nao(ALModule):
         motion_service.setStiffnesses("RArm", 0.0)
 
     def give_ball(self):
+        """Make NAO capable of giving a red ball (Touch the head after taking the ball on its hand)"""
         names = ["RShoulderPitch", "RWristYaw", "RElbowYaw"]
         angles = [0.26, 1.22, 1.74]
         fraction_max_speed = 0.2
@@ -86,22 +90,36 @@ class Nao(ALModule):
         time.sleep(2.0)
         motion_service.setAngles("RHand", 1.00, fraction_max_speed)
         time.sleep(1.0)
-        global memory_service
-        memory_service = ALProxy("ALMemory")
-        memory_service.subscribeToEvent("MiddleTactilTouched", self.name,
-                                        "head_touched")
-        global not_touched
-        while not_touched:
-            time.sleep(4.0)
-            memory_service.raiseEvent("MiddleTactilTouched", 1.0)
-        not_touched = True
+        self.memory_service.subscribeToEvent("MiddleTactilTouched", self.name,
+                                             "head_touched")
+        while self.not_touched:
+            time.sleep(1.0)
+            self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
+        self.not_touched = True
         self.go_to_posture("Stand")
 
-    def head_touched(self, val, sub_id):
-        global memory_service
-        memory_service.unsubscribeToEvent("MiddleTactilTouched", self.name)
-        global not_touched
-        not_touched = False
+    def head_touched(self, event_name, value):
+        """Callback method for MiddleTactilTouched event"""
+        print "Event raised: " + event_name + " " + str(value)
+        self.memory_service.unsubscribeToEvent("MiddleTactilTouched",
+                                               self.name)
+        self.not_touched = False
+
+    def wait_redball(self):
+        """Make NAO wait until it detect a red ball"""
+        self.memory_service.subscribeToEvent("redBallDetected", self.name,
+                                             "redball_detected")
+        self.tts_service.say("Mostrami la palla")
+        while self.not_detected:
+            time.sleep(1.0)
+            self.memory_service.raiseEvent("redBallDetected",1.0)
+        self.not_detected = False
+
+    def redball_detected(self, event_name, value):
+        """Callback method for redBallDetected event"""
+        print "Event raised: " + event_name + " " + str(value)
+        self.memory_service.unsubscribeToEvent("redBallDetected", self.name)
+        self.not_detected = False
 
 
 parser = argparse.ArgumentParser()
@@ -114,16 +132,23 @@ parser.add_argument("--port", type=int, default=9559, help="Naoqi port number")
 
 args = parser.parse_args()
 #Da portare nella classe Nao in init
-myBroker = ALBroker(
+my_broker = ALBroker(
     "myBroker",
     "0.0.0.0",  # listen to anyone
     0,  # find a free port and use it
     args.ip,  # parent broker IP
     args.port)  # parent broker port
+print "ALBroker successfully started."
+print "Use Ctrl+c to stop this script       ."
 
-#tts_proxy = session.service("ALTextToSpeech")
-global Nao
-Nao = Nao()
-Nao.go_to_posture("Stand")
-Nao.give_ball()
-myBroker.shutdown()
+try:
+    global Nao
+    Nao = Nao()
+    Nao.go_to_posture("Stand")
+    Nao.take_ball()
+except KeyboardInterrupt:
+    print
+    print "Interrupted by user"
+    print "Stopping..."
+finally:
+    my_broker.shutdown()
