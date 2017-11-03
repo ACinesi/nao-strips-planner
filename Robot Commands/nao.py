@@ -1,10 +1,10 @@
 import argparse
 import time
+import pprint
 
 from naoqi import ALBroker, ALModule, ALProxy
 
 global Nao
-
 
 class Nao(ALModule):
     """Basic class for interaction to NAO Robot"""
@@ -57,21 +57,24 @@ class Nao(ALModule):
 
     def take_ball(self):
         """Make NAO capable of taking a red ball (Touch the head after putting the ball on its hand)"""
+        """LAST IMPROVEMENT: NAO follow the ball with the head"""
+        """TODO: NAO recognize to have the ball without touching the head"""
         names = ["RShoulderPitch", "RWristYaw", "RElbowYaw", "RHand"]
         angles = [0.26, 1.22, 1.74, 1.00]
         fraction_max_speed = 0.2
-        self.wait_redball()
+        self.redball_follower(True)
+        time.sleep(2.0)
         motion_service = ALProxy("ALMotion")
         motion_service.setStiffnesses("RArm", 1.0)
         motion_service.setAngles(names, angles, fraction_max_speed)
         time.sleep(2.0)
         self.memory_service.subscribeToEvent("MiddleTactilTouched", self.name,
                                              "head_touched")
-
         while self.not_touched:
             time.sleep(4.0)
             self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
         self.not_touched = True
+        self.redball_follower(False)
         motion_service.setAngles("RHand", 0.00, fraction_max_speed)
         time.sleep(1.0)
         names = names[0:3]
@@ -113,14 +116,30 @@ class Nao(ALModule):
         self.tts_service.say("Mostrami la palla")
         while self.not_detected:
             time.sleep(1.0)
-            self.memory_service.raiseEvent("redBallDetected", 1.0)
+            #self.memory_service.raiseEvent("redBallDetected", 1.0)
         self.not_detected = False
 
     def redball_detected(self, event_name, value):
         """Callback method for redBallDetected event"""
-        print "Event raised: " + event_name + " " + str(value)
+        print event_name
+        #print value
         self.memory_service.unsubscribeToEvent("redBallDetected", self.name)
         self.not_detected = False
+
+    def redball_follower(self,start,mode="Head"):
+        tracker = ALProxy("ALTracker")
+        if start:
+            target_name = "RedBall"
+            diameter_ball = 0.07 #da controllare
+            tracker.stopTracker()
+            tracker.unregisterAllTargets()
+            tracker.registerTarget(target_name, diameter_ball)
+            tracker.setMode(mode)
+            tracker.setEffector("None")
+            tracker.track(target_name)
+        else:
+            tracker.stopTracker()
+            tracker.unregisterAllTargets()
 
 
 parser = argparse.ArgumentParser()
@@ -145,6 +164,7 @@ print "Use Ctrl+c to stop this script       ."
 try:
     global Nao
     Nao = Nao()
+    tracker = ALProxy("ALTracker")
     Nao.go_to_posture("Stand")
     Nao.take_ball()
 except KeyboardInterrupt:

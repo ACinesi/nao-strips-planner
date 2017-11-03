@@ -1,20 +1,21 @@
 import speech_recognition as sr
-import strips_planning as sp
 import socket
+import text_tagger as tt
 from os import system
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a TCP/IP socket
+print "Testing internet...."
 hostname = "google.it"
 response = system("ping " + hostname)
 
 if response == 0:
-    print("I can reach internet, I'm going to use Google TTS API")
+    print "I can reach internet, I'm going to use Google TTS API"
 else:
-    print("I can't reach internet, I'm going to use PocketSphinx")
+    print "I can't reach internet, I'm going to use PocketSphinx"
 
 r = sr.Recognizer()  # obtain audio from the microphone
 with sr.Microphone() as source:
-    print("Please wait. Calibrating microphone...")
+    print("Please wait 5s. Calibrating microphone...")
     # listen for 5 seconds and create the ambient noise energy level
     r.adjust_for_ambient_noise(source, duration=5)
     print("Say something!")
@@ -22,7 +23,7 @@ with sr.Microphone() as source:
 
 try:  # recognize speech using Sphinx or Google TTS API
     if response == 0:
-        speech = r.recognize_google(audio, None, "it-IT")
+        speech = r.recognize_google(audio, None, "en-UK")
     else:
         speech = r.recognize_sphinx(audio, "it-IT")
     print("I think you said '" + speech + "'")
@@ -30,6 +31,10 @@ except sr.UnknownValueError:
     print("I could not understand audio")
 except sr.RequestError as e:
     print("Error; {0}".format(e))
+
+text = tt.process_text(speech)
+
+print "Processed text", text
 
 # TODO Filter the commands to obtain senteces structured as verbs + noun(or personal noun) (Es. prendere palla, andare enrico)
 # use TreeTagger
@@ -43,7 +48,6 @@ except sr.RequestError as e:
 
 #     def add_child(self, obj):
 #         self.children.append(obj)
-
 
 # start = Node("start")
 # take = Node("take")
@@ -78,7 +82,6 @@ except sr.RequestError as e:
 #         print(command + " -> " + currentNode.goal)
 #     else:
 #         raise Exception("No goal reached.")
-
 
 # # WORKFLOW
 # # extract commands from commands
