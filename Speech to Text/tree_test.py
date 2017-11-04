@@ -1,4 +1,3 @@
-
 class Node(object):
     def __init__(self, name, leaf=False, goal=None):
         self.name = name
@@ -10,25 +9,12 @@ class Node(object):
         self.children.append(obj)
 
 
-start = Node("start")
-take = Node("take")
-move = Node("move")          
-the = Node("the")
-to = Node("to")
-ball = Node("ball", True, "bring(Ball)")
-thomas = Node("Thomas", True, "at(Thomas)")
+dare = Node("dare")
+prendere =Node("prendere")
+palla = Node("palla", True, "!Bring(Ball)")
 
-start.add_child(take)
-start.add_child(move)
-take.add_child(the)
-move.add_child(to)
-the.add_child(ball)
-to.add_child(thomas)
-
-
-
-text1 = "take the ball"
-text = "move to Thomas"
+dare.add_child(palla)
+prendere.add_child(palla)
 
 words = text.split(" ")
 

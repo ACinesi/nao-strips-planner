@@ -3,6 +3,18 @@ import socket
 import text_tagger as tt
 from os import system
 
+
+class Node(object):
+    def __init__(self, name, leaf=False, goal=None):
+        self.name = name
+        self.children = []
+        self.leaf = leaf
+        self.goal = goal
+
+    def add_child(self, obj):
+        self.children.append(obj)
+
+
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a TCP/IP socket
 print "Testing internet...."
 hostname = "google.it"
@@ -23,7 +35,7 @@ with sr.Microphone() as source:
 
 try:  # recognize speech using Sphinx or Google TTS API
     if response == 0:
-        speech = r.recognize_google(audio, None, "en-UK")
+        speech = r.recognize_google(audio, None, "it-IT")
     else:
         speech = r.recognize_sphinx(audio, "it-IT")
     print("I think you said '" + speech + "'")
@@ -36,58 +48,26 @@ text = tt.process_text(speech)
 
 print "Processed text", text
 
-# TODO Filter the commands to obtain senteces structured as verbs + noun(or personal noun) (Es. prendere palla, andare enrico)
-# use TreeTagger
+root = Node("root")
+dare = Node("dare")
+prendere = Node("prendere")
+palla = Node("palla", True, "!Bring(Ball)")
+palla2 = Node("palla", True, "Bring(Ball)")
 
-# class Node(object):
-#     def __init__(self, name, leaf=False, goal=None):
-#         self.name = name
-#         self.children = []
-#         self.leaf = leaf
-#         self.goal = goal
+root.add_child(dare)
+root.add_child(prendere)
+dare.add_child(palla)
+prendere.add_child(palla2)
 
-#     def add_child(self, obj):
-#         self.children.append(obj)
+currentNode = root
 
-# start = Node("start")
-# take = Node("take")
-# move = Node("move")
-# the = Node("the")
-# to = Node("to")
-# ball = Node("ball", True, "bring(Ball)")
-# thomas = Node("thomas", True, "at(Thomas)")
+for word in text:
+    for children in currentNode.children:
+        if word == children.name:
+            currentNode = children
+            break
 
-# start.add_child(take)
-# start.add_child(move)
-# take.add_child(the)
-# move.add_child(to)
-# the.add_child(ball)
-# to.add_child(thomas)
-
-# commands = speech.split(" and ")
-
-# # print command
-
-# for command in commands:
-#     words = command.split(" ")
-#     # print words
-#     currentNode = start
-#     for word in words:
-#         for children in currentNode.children:
-#             if word.lower() == children.name:
-#                 currentNode = children
-#                 break
-
-#     if currentNode.leaf:
-#         print(command + " -> " + currentNode.goal)
-#     else:
-#         raise Exception("No goal reached.")
-
-# # WORKFLOW
-# # extract commands from commands
-# # fill the initial state
-# # build the goal state
-# # update the strips_commands.txt in according to
-# # run the strips solver
-# # get the plan
-# # execute one by one the actions of the plan
+if currentNode.leaf:
+    print "Goal state", currentNode.goal
+else:
+    raise Exception("No goal reached.")
