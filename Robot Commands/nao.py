@@ -1,10 +1,9 @@
 import argparse
 import time
-import pprint
 
 from naoqi import ALBroker, ALModule, ALProxy
 
-global nao
+nao=None
 FRAME_TORSO = 0
 
 
@@ -23,7 +22,7 @@ class Nao(ALModule):
     def get_posture(self):
         """Get current NAO posture"""
         posture_service = ALProxy("ALRobotPosture")
-        posture = posture_service.getPosture( )
+        posture = posture_service.getPosture()
         return posture
 
     def go_to_posture(self, posture_name):
@@ -53,7 +52,7 @@ class Nao(ALModule):
         # theta=math.pi/2 se ci vengono fornite solo x e y
         theta = destination[2]
         motion_service = ALProxy("ALMotion")
-        motion_service.moveInit( )
+        motion_service.moveInit()
         motion_service.moveTo(x, y, theta)
         self.tts_service.say("Sono arrivata")
 
@@ -129,6 +128,7 @@ class Nao(ALModule):
         self.not_detected = False
 
     def redball_follower(self, start, mode="Head"):
+        """Make NAO track a redball using mode selected"""
         tracker = ALProxy("ALTracker")
         if start:
             target_name = "RedBall"
@@ -140,19 +140,20 @@ class Nao(ALModule):
             tracker.setEffector("None")
             tracker.track(target_name)
         else:
-            tracker.stopTracker( )
-            tracker.unregisterAllTargets( )
+            tracker.stopTracker()
+            tracker.unregisterAllTargets()
 
 
 def main():
-    parser = argparse.ArgumentParser( )
+    """A simple main"""
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--ip",
         type=str,
         default="127.0.0.1",
         help="Robot IP address. On robot or Local Naoqi: use '127.0.0.1'.")
     parser.add_argument("--port", type=int, default=9559, help="Naoqi port number")
-    args = parser.parse_args( )
+    args = parser.parse_args()
     my_broker = ALBroker(
         "myBroker",
         "0.0.0.0",  # listen to anyone
@@ -164,7 +165,7 @@ def main():
 
     try:
         global nao
-        nao = Nao( )
+        nao = Nao()
         while True:
             time.sleep(1.0)
     except KeyboardInterrupt:
@@ -172,9 +173,8 @@ def main():
         print "Interrupted by user"
         print "Stopping..."
     finally:
-        my_broker.shutdown( )
+        my_broker.shutdown()
 
 
 if __name__ == "__main__":
     main()
-
