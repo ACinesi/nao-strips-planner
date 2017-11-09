@@ -73,6 +73,7 @@ if currentNode.leaf:
 else:
     raise Exception("No goal reached.")
 
+
 # recognized = False
 # # this is called from the background thread
 # def callback(recognizer, audio):
