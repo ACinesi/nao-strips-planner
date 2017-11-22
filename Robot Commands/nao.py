@@ -77,7 +77,7 @@ class Nao(ALModule):
                                              "head_touched")
         while self.not_touched:
             time.sleep(2.0)
-            #self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
+            # self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
         self.not_touched = True
         self.redball_follower(False)
         motion_service.setAngles("RHand", 0.00, fraction_max_speed)
@@ -103,7 +103,7 @@ class Nao(ALModule):
                                              "head_touched")
         while self.not_touched:
             time.sleep(1.0)
-            #self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
+            # self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
         self.not_touched = True
         self.go_to_posture("Stand")
 
@@ -138,6 +138,40 @@ class Nao(ALModule):
             # tracker.stopTracker()
             # tracker.unregisterAllTargets()
             # return position
+        else:
+            tracker.stopTracker()
+            tracker.unregisterAllTargets()
+
+    def redball_follower_1(self, start, mode="Head"):
+        """Make NAO track a redball using mode selected"""
+        tracker = ALProxy("ALTracker")
+        motion_service = ALProxy("ALMotion")
+        motion_service.wakeUp()
+        self.go_to_posture("StandInit")
+        if start:
+            target_name = "RedBall"
+            diameter_ball = 0.04  # da controllare
+            tracker.registerTarget(target_name, diameter_ball)
+            tracker.setMode(mode)
+            tracker.setEffector("None")
+            tracker.track(target_name)
+            x, y, z = tracker.getTargetPosition(2)
+            hand_position = motion_service.getPosition("RHand", 0, False)
+            try:
+                while True:
+                    x, y, z = tracker.getTargetPosition(2)
+                    diff_x = x - hand_position[0]
+                    diff_y = y - hand_position[1]
+                    diff_z = z - hand_position[2]
+                    print "Error estimated: "+str(x)+" "+ str(y) +" "+ str(z)
+                    time.sleep(2.0)
+            except KeyboardInterrupt:
+                print
+                print "Interrupted by user"
+                print "Stopping..."
+            finally:
+                tracker.stopTracker()
+                tracker.unregisterAllTargets()
         else:
             tracker.stopTracker()
             tracker.unregisterAllTargets()
@@ -209,7 +243,7 @@ def main():
 
         print(nao.get_posture())
         print(nao.hand_full())
-        
+
         '''
         nao.take_ball()
         nao.give_ball()
