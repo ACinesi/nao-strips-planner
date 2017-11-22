@@ -206,9 +206,18 @@ def main():
     try:
         global nao
         nao = Nao()
-        # nao.redball_follower(False)
-        position = nao.redball_follower(True)
+
+        print(nao.get_posture())
+        print(nao.hand_full())
+        
+        '''
+        nao.take_ball()
+        nao.give_ball()
+        position = nao.find_person("Enrico")
+        time.sleep(2.0)
         nao.move(position)
+
+        '''
         while True:
             time.sleep(1.0)
     except KeyboardInterrupt:
