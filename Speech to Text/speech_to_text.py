@@ -32,7 +32,7 @@ with m as source:
     # listen for 5 seconds and create the ambient noise energy level
     r.adjust_for_ambient_noise(source, duration=5)
     print("Say something!")
-    audio = r.listen(source, 5, 1) 
+    audio = r.listen(source, 5, 5)
 
 try:  # recognize speech using Sphinx or Google TTS API
     if response == 0:
@@ -47,18 +47,22 @@ except sr.RequestError as e:
 
 text = tt.process_text(speech)
 
-print "Processed text", text
+print "Processed text->", text
 
 root = Node("root")
 dare = Node("dare")
 prendere = Node("prendere")
+trovare = Node("trovare")
 palla = Node("palla", True, "!Bring(Ball)")
 palla2 = Node("palla", True, "Bring(Ball)")
+enrico = Node("enrico", True, "PersonAt(enrico,B),At(B)")
 
 root.add_child(dare)
 root.add_child(prendere)
+root.add_child(trovare)
 dare.add_child(palla)
 prendere.add_child(palla2)
+trovare.add_child(enrico)
 
 currentNode = root
 
@@ -69,10 +73,9 @@ for word in text:
             break
 
 if currentNode.leaf:
-    print "Goal state", currentNode.goal
+    print "Goal state->", currentNode.goal
 else:
     raise Exception("No goal reached.")
-
 
 # recognized = False
 # # this is called from the background thread
