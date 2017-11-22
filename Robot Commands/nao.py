@@ -38,9 +38,12 @@ class Nao(ALModule):
         time.sleep(2.0)
         hand_angle = motion_service.getAngles("RHand", True)
         print hand_angle
-        if hand_angle[0] < self.hand_full_threshold:  # calibrare il valore in base alla palla
+        # calibrare il valore in base alla palla
+        if hand_angle[0] < self.hand_full_threshold:
             result = False
+            self.tts_service.say("Non ho nulla in mano")
         else:
+            self.tts_service.say("Ho la mano occupata")
             result = True
         return result
 
@@ -49,7 +52,7 @@ class Nao(ALModule):
         """Move NAO to a position relative to NAO frame"""
         x = destination[0]
         y = destination[1]
-        theta=math.pi/2 #nel caso ci vengano fornite solo x e y senza theta
+        theta = math.pi / 2  # nel caso ci vengano fornite solo x e y senza theta
         motion_service = ALProxy("ALMotion")
         motion_service.moveInit()
         motion_service.moveTo(x, y, 0.0)
@@ -62,6 +65,8 @@ class Nao(ALModule):
         names = ["RShoulderPitch", "RWristYaw", "RElbowYaw", "RHand"]
         angles = [0.26, 1.22, 1.74, 1.00]
         fraction_max_speed = 0.2
+        self.wait_redball()
+        self.tts_service.say("Vedo la palla")
         self.redball_follower(True)
         time.sleep(2.0)
         motion_service = ALProxy("ALMotion")
@@ -71,7 +76,7 @@ class Nao(ALModule):
         self.memory_service.subscribeToEvent("MiddleTactilTouched", self.name,
                                              "head_touched")
         while self.not_touched:
-            time.sleep(4.0)
+            time.sleep(2.0)
             #self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
         self.not_touched = True
         self.redball_follower(False)
@@ -120,44 +125,44 @@ class Nao(ALModule):
         self.go_to_posture("StandInit")
         if start:
             target_name = "RedBall"
-            diameter_ball = 0.06  # da controllare
+            diameter_ball = 0.04  # da controllare
             tracker.registerTarget(target_name, diameter_ball)
             tracker.setMode(mode)
             tracker.setEffector("None")
             tracker.track(target_name)
-            while not tracker.isNewTargetDetected():
-                print "."
-            time.sleep(2.0)
-            position =  tracker.getTargetPosition(2)
-            print position
-            tracker.stopTracker()
-            tracker.unregisterAllTargets()
-            return position
+            # while not tracker.isNewTargetDetected():
+            #     print "."
+            # time.sleep(2.0)
+            # position = tracker.getTargetPosition(2)
+            # print position
+            # tracker.stopTracker()
+            # tracker.unregisterAllTargets()
+            # return position
         else:
             tracker.stopTracker()
             tracker.unregisterAllTargets()
 
-    def find_person(self,name):
+    def find_person(self, name):
         """Make NAO find a person position given the target name"""
         tracker = ALProxy("ALTracker")
         target_name = name
         face_width = 12
-        tracker.registerTarget(name,face_width)
+        tracker.registerTarget(name, face_width)
         tracker.setMode("Head")
         tracker.setEffector("None")
         tracker.track(target_name)
         while not tracker.isNewTargetDetected():
             pass
-        self.tts_service.say("Trovato")
+        self.tts_service.say(name + " trovato")
         time.sleep(2.0)
-        position =  tracker.getTargetPosition(2)
-        print "Target "+ name + " found at "+ position
+        position = tracker.getTargetPosition(2)
+        print "Target " + name + " found at " + position
         tracker.stopTracker()
         tracker.unregisterAllTargets()
         return position
 
 
-#Callback
+# Callback
 
     def redball_detected(self, event_name, value):
         """Callback method for redBallDetected event"""
@@ -167,7 +172,6 @@ class Nao(ALModule):
         # print pos
         print event_name
         print value
-
         self.memory_service.unsubscribeToEvent("redBallDetected", self.name)
         self.not_detected = False
 
@@ -202,7 +206,7 @@ def main():
     try:
         global nao
         nao = Nao()
-        #nao.redball_follower(False)
+        # nao.redball_follower(False)
         position = nao.redball_follower(True)
         nao.move(position)
         while True:

@@ -1,6 +1,7 @@
 import treetaggerwrapper
 from nltk import word_tokenize
 from nltk.corpus import stopwords
+from nltk.tokenize import sent_tokenize
 
 
 def process_text(text):

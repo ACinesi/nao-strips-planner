@@ -15,67 +15,81 @@ class Node(object):
         self.children.append(obj)
 
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a TCP/IP socket
-print "Testing internet...."
-hostname = "google.it"
-response = system("ping " + hostname)
+def listen_commands():
+    # Create a TCP/IP socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print "Testing internet...."
+    hostname = "google.it"
+    response = system("ping " + hostname)
 
-if response == 0:
-    print "I can reach internet, I'm going to use Google TTS API"
-else:
-    print "I can't reach internet, I'm going to use PocketSphinx"
-
-r = sr.Recognizer()  # obtain audio from the microphone
-m = sr.Microphone()
-with m as source:
-    print("Please wait 5s. Calibrating microphone...")
-    # listen for 5 seconds and create the ambient noise energy level
-    r.adjust_for_ambient_noise(source, duration=5)
-    print("Say something!")
-    audio = r.listen(source, 5, 5)
-
-try:  # recognize speech using Sphinx or Google TTS API
     if response == 0:
-        speech = r.recognize_google(audio, None, "it-IT")
+        print "I can reach internet, I'm going to use Google TTS API"
     else:
-        speech = r.recognize_sphinx(audio, "it-IT")
-    print("I think you said '" + speech + "'")
-except sr.UnknownValueError:
-    print("I could not understand audio")
-except sr.RequestError as e:
-    print("Error; {0}".format(e))
+        print "I can't reach internet, I'm going to use PocketSphinx"
 
-text = tt.process_text(speech)
+    r = sr.Recognizer()  # obtain audio from the microphone
+    m = sr.Microphone()
+    with m as source:
+        print("Please wait 5s. Calibrating microphone...")
+        # listen for 5 seconds and create the ambient noise energy level
+        r.adjust_for_ambient_noise(source, duration=5)
+        print("Say something!")
+        audio = r.listen(source, 5, 5)
 
-print "Processed text->", text
+    try:  # recognize speech using Sphinx or Google TTS API
+        if response == 0:
+            speech = r.recognize_google(audio, None, "it-IT")
+        else:
+            speech = r.recognize_sphinx(audio, "it-IT")
+        print("I think you said '" + speech + "'")
+    except sr.UnknownValueError:
+        print("I could not understand audio")
+    except sr.RequestError as e:
+        print("Error; {0}".format(e))
 
-root = Node("root")
-dare = Node("dare")
-prendere = Node("prendere")
-trovare = Node("trovare")
-palla = Node("palla", True, "!Bring(Ball)")
-palla2 = Node("palla", True, "Bring(Ball)")
-enrico = Node("enrico", True, "PersonAt(enrico,B),At(B)")
+    text = tt.process_text(speech)
 
-root.add_child(dare)
-root.add_child(prendere)
-root.add_child(trovare)
-dare.add_child(palla)
-prendere.add_child(palla2)
-trovare.add_child(enrico)
+    print "Processed text->", text
 
-currentNode = root
+    root = Node("root")
+    dare = Node("dare")
+    prendere = Node("prendere")
+    trovare = Node("trovare")
+    palla = Node("palla", True, "!Bring(Ball)")
+    palla2 = Node("palla", True, "Bring(Ball)")
+    enrico = Node("enrico", True, "PersonAt(enrico,B),At(B)")
 
-for word in text:
-    for children in currentNode.children:
-        if word == children.name:
-            currentNode = children
-            break
+    root.add_child(dare)
+    root.add_child(prendere)
+    root.add_child(trovare)
+    dare.add_child(palla)
+    prendere.add_child(palla2)
+    trovare.add_child(enrico)
 
-if currentNode.leaf:
-    print "Goal state->", currentNode.goal
-else:
-    raise Exception("No goal reached.")
+    goals = list()
+    currentNode = root
+    for word in text:
+        for children in currentNode.children:
+            if word == children.name:
+                if children.leaf:
+                    goals.append(children.goal)
+                    currentNode = root
+                else:
+                    currentNode = children
+
+    if len(goals) > 0:
+        for goal in goals:
+            print "Goal state->", goal
+    else:
+        raise Exception("No goal reached.")
+
+
+def main():
+    listen_commands()
+
+
+if __name__ == '__main__':
+    main()
 
 # recognized = False
 # # this is called from the background thread
