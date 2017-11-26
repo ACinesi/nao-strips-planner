@@ -189,6 +189,15 @@ class Nao(ALModule):
         self.my_broker.shutdown()
         print "Disconnecting...."
 
+    def witcher(self,function, arg):
+        switcher = {'move': self.move, 'take_ball': self.take_ball, 'give_ball':self.give_ball,'find_person': self.find_person}
+        # Get the function from switcher dictionary
+        func = switcher.get(function)
+        # Execute the function
+        result = func(arg)
+        return result
+
+
 
 def main():
     """A simple main"""
