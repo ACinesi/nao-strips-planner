@@ -1,9 +1,8 @@
 import argparse
 import time
-import strips_planning
-
+import strips_planning as sp
+import speech_to_text as stt
 from naoqi import ALBroker, ALModule, ALProxy
-
 from nao import Nao
 
 
@@ -18,19 +17,11 @@ def main():
     parser.add_argument(
         "--port", type=int, default=9559, help="Naoqi port number")
     args = parser.parse_args()
-    my_broker = ALBroker(
-        "myBroker",
-        "0.0.0.0",  # listen to anyone
-        0,  # find a free port and use it
-        args.ip,  # parent broker IP
-        args.port)  # parent broker port
-    print "ALBroker successfully started."
-    print "Use Ctrl+c to stop this script       ."
-    nao = Nao()
-    file = open("strips_nao_example.txt", "r")
-    new_file = open("strips_nao_test.txt","w")
-    #Inizializzo il file strips per ottenere il piano
-    for index,line in enumerate(file.readlines()):
+    nao = Nao(args.ip, args.port)
+    source_strips = open("strips_nao_example.txt", "r")
+    my_strips = open("strips_nao_test.txt", "w")
+    # Inizializzo il file strips per ottenere il piano
+    for index, line in enumerate(source_strips.readlines()):
         if index == 0:
             init_state_line = "Initial state: At(A)"
             posture = nao.get_posture()
@@ -46,17 +37,22 @@ def main():
                 hand_line = "Hand(empty)"
             init_state_line = init_state_line + "," + hand_line
             print "Line 0: " + init_state_line
-            new_file.write(init_state_line+"\n")
+            my_strips.write(init_state_line + "\n")
         elif index == 1:
-            goal_state_line = "Da ricevere dallo speech text"
+            goals = stt.listen_commands()
+            goal_state_line = "Goal state: "
+            if goals != "":
+                goal_state_line += goals
             print "Line 1: " + goal_state_line
-            new_file.write(line)
+            my_strips.write(line)
         else:
-            new_file.write(line)
-    new_file.flush()
-    new_file.close()
-    file.flush()
-    file.close()
+            my_strips.write(line)
+
+    my_strips.flush()
+    my_strips.close()
+    source_strips.flush()
+    source_strips.close()     
+    print sp.main()
 
 if __name__ == "__main__":
     main()

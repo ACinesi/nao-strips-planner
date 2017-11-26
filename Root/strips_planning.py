@@ -177,6 +177,7 @@ def create_world(filename):
     postcondRegex = re.compile('post(conditions)?:', re.IGNORECASE)
     pstate = ParseState.INITIAL
     cur_action = None
+    filename="strips_nao_test.txt"
     if filename is None:
         filename = sys.argv[1]
 
@@ -595,5 +596,4 @@ def main():
             #show_solution(solution)
 
 if __name__ == "__main__":
-    import sys
-    main(sys.argv[1])
+    main()

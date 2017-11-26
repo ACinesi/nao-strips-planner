@@ -55,7 +55,7 @@ class Nao(ALModule):
         theta = math.pi / 2  # nel caso ci vengano fornite solo x e y senza theta
         motion_service = ALProxy("ALMotion")
         motion_service.moveInit()
-        motion_service.moveTo(x, y, 0.0)
+        motion_service.moveTo(x, y, theta)
         self.tts_service.say("Sono arrivata")
 
     def take_ball(self):
@@ -144,26 +144,32 @@ class Nao(ALModule):
 
     def redball_follower_1(self, start, mode="Head"):
         """Make NAO track a redball using mode selected"""
+        names = ["RShoulderPitch", "RWristYaw", "RElbowYaw", "RHand"]
+        angles = [0.26, 1.22, 1.74, 1.00]
+        fraction_max_speed = 0.2
         tracker = ALProxy("ALTracker")
         motion_service = ALProxy("ALMotion")
         motion_service.wakeUp()
         self.go_to_posture("StandInit")
+        motion_service.setStiffnesses("RArm", 1.0)
+        motion_service.setAngles(names, angles, fraction_max_speed)
+        time.sleep(2.0)
         if start:
             target_name = "RedBall"
             diameter_ball = 0.04  # da controllare
-            tracker.registerTarget(target_name, diameter_ball)
+            tracker.registerTarget("target_name", diameter_ball)
             tracker.setMode(mode)
             tracker.setEffector("None")
             tracker.track(target_name)
-            x, y, z = tracker.getTargetPosition(2)
+            ball_position = tracker.getTargetPosition(2)
             hand_position = motion_service.getPosition("RHand", 0, False)
             try:
                 while True:
-                    x, y, z = tracker.getTargetPosition(2)
-                    diff_x = x - hand_position[0]
-                    diff_y = y - hand_position[1]
-                    diff_z = z - hand_position[2]
-                    print "Error estimated: "+str(x)+" "+ str(y) +" "+ str(z)
+                    ball_position = tracker.getTargetPosition(2)
+                    diff_x = ball_position[0] - hand_position[0]
+                    diff_y = ball_position[1] - hand_position[1]
+                    diff_z = ball_position[2]- hand_position[2]
+                    print "Error estimated: "+str(ball_position[0])+" "+ str(ball_position[1]) +" "+ str(ball_position[2])
                     time.sleep(2.0)
             except KeyboardInterrupt:
                 print
@@ -179,20 +185,24 @@ class Nao(ALModule):
     def find_person(self, name):
         """Make NAO find a person position given the target name"""
         tracker = ALProxy("ALTracker")
+        motion_service = ALProxy("ALMotion")
+        motion_service.wakeUp()
+        self.tts_service.say("Ciao")
         target_name = name
         face_width = 12
-        tracker.registerTarget(name, face_width)
-        tracker.setMode("Head")
+        tracker.registerTarget("Face", face_width)
+        tracker.setMode("Move")
         tracker.setEffector("None")
-        tracker.track(target_name)
+        tracker.track("Face")
         while not tracker.isNewTargetDetected():
-            pass
+            time.sleep(1.0)
+        time.sleep(1.0)
         self.tts_service.say(name + " trovato")
         time.sleep(2.0)
         position = tracker.getTargetPosition(2)
-        print "Target " + name + " found at " + position
-        tracker.stopTracker()
-        tracker.unregisterAllTargets()
+        print "Target " + name + " found at " 
+        print position
+
         return position
 
 
@@ -240,18 +250,20 @@ def main():
     try:
         global nao
         nao = Nao()
+        nao.go_to_posture("Stand")
+        #print(nao.get_posture())
+        #print(nao.hand_full())
 
-        print(nao.get_posture())
-        print(nao.hand_full())
-
-        '''
-        nao.take_ball()
-        nao.give_ball()
-        position = nao.find_person("Enrico")
+        
+        #nao.take_ball()
+        nao.redball_follower(False)
+        #nao.redball_follower_1(True)
+        #position = nao.find_person("Enrico")
+    
         time.sleep(2.0)
-        nao.move(position)
+        #nao.move(position)
 
-        '''
+        
         while True:
             time.sleep(1.0)
     except KeyboardInterrupt:

@@ -9,7 +9,7 @@ from nao import Nao
 def main():
     nao = Nao()
     file = open("../Strips Parser/strips_nao_example.txt", "r+")
-    #Inizializzo il file strips per ottenere il piano
+    # Inizializzo il file strips per ottenere il piano
     for index, _ in enumerate(file.readlines()):
         if index == 0:
             init_state_line = "Initial state: At(A)"
@@ -28,11 +28,12 @@ def main():
             print "Line 0: " + init_state_line
             file.write(init_state_line)
         elif index == 1:
-            goal_state_line = "Da ricevere dallo speech text"
+            goal_state_line = listen_commands()
             print "Line 1: " + goal_state_line
         file.flush()
         file.close()
-        plan = 
+        plan = exec()
+
 
 if __name__ == "__main__":
     main()

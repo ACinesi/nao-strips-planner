@@ -16,11 +16,11 @@ class Node(object):
 
 
 def listen_commands():
-    # Create a TCP/IP socket
-    # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # print "Testing internet...."
-    # hostname = "google.it"
-    # response = system("ping " + hostname)
+    # Create a TCP / IP socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print "Testing internet...."
+    hostname = "google.it"
+    response = system("ping " + hostname)
     response = 0
     if response == 0:
         print "I can reach internet, I'm going to use Google TTS API"
@@ -57,7 +57,7 @@ def listen_commands():
     trovare = Node("trovare")
     palla = Node("palla", True, "!Bring(Ball)")
     palla2 = Node("palla", True, "Bring(Ball)")
-    enrico = Node("enrico", True, "PersonAt(enrico,B),At(B)")
+    enrico = Node("enrico", True, "PersonAt(enrico,B), At(B)")
 
     root.add_child(dare)
     root.add_child(prendere)
@@ -76,12 +76,18 @@ def listen_commands():
                     currentNode = root
                 else:
                     currentNode = children
-
+    temp_goals = ""
     if len(goals) > 0:
-        for goal in goals:
-            print "Goal state->", goal
+        for index, goal in enumerate(goals):
+            # print "Goal state->", goal
+            if index == 0:
+                temp_goals += goal
+            else:
+                temp_goals += ", " + goal
+        print(temp_goals)
     else:
-        raise Exception("No goal reached.")
+        print "No goal reached."
+    return temp_goals
 
 
 def main():
