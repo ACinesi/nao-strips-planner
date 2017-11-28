@@ -238,8 +238,6 @@ class Nao(ALModule):
                                                self.name)
         self.not_touched = False
 
-<<<<<<< HEAD
-=======
     def disconnect(self):
         self.my_broker.shutdown()
         print "Disconnecting...."
@@ -253,7 +251,6 @@ class Nao(ALModule):
         return result
 
 
->>>>>>> c583fef6e4f0a0e1db8a449be259f8a9ef44cd92
 
 def main():
     """A simple main"""
