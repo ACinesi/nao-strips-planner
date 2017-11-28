@@ -238,6 +238,22 @@ class Nao(ALModule):
                                                self.name)
         self.not_touched = False
 
+<<<<<<< HEAD
+=======
+    def disconnect(self):
+        self.my_broker.shutdown()
+        print "Disconnecting...."
+
+    def switcher(self,function, arg):
+        switcher = {'move': self.move, 'take_ball': self.take_ball, 'give_ball':self.give_ball,'find_person': self.find_person}
+        # Get the function from switcher dictionary
+        func = switcher.get(function)
+        # Execute the function
+        result = func(arg)
+        return result
+
+
+>>>>>>> c583fef6e4f0a0e1db8a449be259f8a9ef44cd92
 
 def main():
     """A simple main"""
