@@ -335,6 +335,9 @@ def create_world(filename):
                 w.add_action(cur_action)
 
                 pstate = ParseState.ACTION_DECLARATION
+        
+        f.flush()
+        f.close()
 
     for k, v in w.actions.iteritems():
         v.generate_groundings(w)
@@ -578,7 +581,7 @@ def print_plan(plan):
 
 def main():
     w = create_world("None")
-
+    pretty_solution = None
     # Did someone start us at the goal?
     already_solved = w.goal_reached()
     print "Goal already solved? {0}".format(already_solved)
@@ -591,7 +594,9 @@ def main():
         else:
             print "Solved!"
             print_plan(solution)
-    return solution
+            pretty_solution = [x.simple_str() for x in solution]
+
+    return pretty_solution
             #from show_strips import show_solution
             #show_solution(solution)
 

@@ -3,39 +3,34 @@ import socket
 import text_tagger as tt
 from os import system
 
-
-class Node(object):
-    def __init__(self, name, leaf=False, goal=None):
-        self.name = name
-        self.children = []
-        self.leaf = leaf
-        self.goal = goal
-
-    def add_child(self, obj):
-        self.children.append(obj)
+r = None
+m = None
+response = None
 
 
-def listen_commands():
+def init():
     # Create a TCP / IP socket
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print "Testing internet...."
     hostname = "google.it"
+    global response
     response = system("ping " + hostname)
-    response = 0
     if response == 0:
         print "I can reach internet, I'm going to use Google TTS API"
     else:
         print "I can't reach internet, I'm going to use PocketSphinx"
-
+    global r, m
     r = sr.Recognizer()  # obtain audio from the microphone
     m = sr.Microphone()
+
+
+def listen():
     with m as source:
         print("Please wait 5s. Calibrating microphone...")
         # listen for 5 seconds and create the ambient noise energy level
         r.adjust_for_ambient_noise(source, duration=5)
         print("Say something!")
         audio = r.listen(source, 5, 5)
-    response = 0
     try:  # recognize speech using Sphinx or Google TTS API
         if response == 0:
             speech = r.recognize_google(audio, None, "it-IT")
@@ -46,52 +41,11 @@ def listen_commands():
         print("I could not understand audio")
     except sr.RequestError as e:
         print("Error; {0}".format(e))
-
-    text = tt.process_text(speech)
-
-    print "Processed text->", text
-
-    root = Node("root")
-    dare = Node("dare")
-    prendere = Node("prendere")
-    trovare = Node("trovare")
-    palla = Node("palla", True, "!Bring(Ball)")
-    palla2 = Node("palla", True, "Bring(Ball)")
-    enrico = Node("enrico", True, "PersonAt(enrico,B), At(B)")
-
-    root.add_child(dare)
-    root.add_child(prendere)
-    root.add_child(trovare)
-    dare.add_child(palla)
-    prendere.add_child(palla2)
-    trovare.add_child(enrico)
-
-    goals = list()
-    currentNode = root
-    for word in text:
-        for children in currentNode.children:
-            if word == children.name:
-                if children.leaf:
-                    goals.append(children.goal)
-                    currentNode = root
-                else:
-                    currentNode = children
-    temp_goals = ""
-    if len(goals) > 0:
-        for index, goal in enumerate(goals):
-            # print "Goal state->", goal
-            if index == 0:
-                temp_goals += goal
-            else:
-                temp_goals += ", " + goal
-        print(temp_goals)
-    else:
-        print "No goal reached."
-    return temp_goals
-
+    return speech
 
 def main():
-    listen_commands()
+    init()
+    listen()
 
 
 if __name__ == '__main__':

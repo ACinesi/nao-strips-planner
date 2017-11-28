@@ -3,14 +3,21 @@ import time
 import math
 from naoqi import ALBroker, ALModule, ALProxy
 
+
 nao = None
 FRAME_TORSO = 0
-
+FRAME_ROBOT = 2
 
 class Nao(ALModule):
     """Basic class for interaction to NAO Robot"""
 
-    def __init__(self, name="nao"):
+    def __init__(self, ip, port, name="nao"):
+        self.my_broker = ALBroker(
+            "myBroker",
+            "0.0.0.0",  # listen to anyone
+            0,  # find a free port and use it
+            ip,  # parent broker IP
+            port)  # parent broker port
         ALModule.__init__(self, name)
         self.name = name
         self.hand_full_threshold = 0.25
@@ -52,16 +59,16 @@ class Nao(ALModule):
         """Move NAO to a position relative to NAO frame"""
         x = destination[0]
         y = destination[1]
-        theta = math.pi / 2  # nel caso ci vengano fornite solo x e y senza theta
+        theta = math.atan(y/x)  #TODO  # nel caso ci vengano fornite solo x e y senza theta
         motion_service = ALProxy("ALMotion")
         motion_service.moveInit()
         motion_service.moveTo(x, y, theta)
         self.tts_service.say("Sono arrivata")
 
     def take_ball(self):
-        """Make NAO capable of taking a red ball (Touch the head after putting the ball on its hand)"""
+        """Make NAO capable of taking a red ball (Touch the hand after putting the ball on its hand)"""
         """LAST IMPROVEMENT: NAO follow the ball with the head"""
-        """TODO: NAO recognize to have the ball without touching the head"""
+        """TODO: NAO recognize to have the ball without touching the hand"""
         names = ["RShoulderPitch", "RWristYaw", "RElbowYaw", "RHand"]
         angles = [0.26, 1.22, 1.74, 1.00]
         fraction_max_speed = 0.2
@@ -73,8 +80,8 @@ class Nao(ALModule):
         motion_service.setStiffnesses("RArm", 1.0)
         motion_service.setAngles(names, angles, fraction_max_speed)
         time.sleep(2.0)
-        self.memory_service.subscribeToEvent("MiddleTactilTouched", self.name,
-                                             "head_touched")
+        self.memory_service.subscribeToEvent("HandRightBackTouched", self.name,
+                                             "hand_touched")
         while self.not_touched:
             time.sleep(2.0)
             # self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
@@ -89,7 +96,7 @@ class Nao(ALModule):
         motion_service.setStiffnesses("RArm", 0.0)
 
     def give_ball(self):
-        """Make NAO capable of giving a red ball (Touch the head after taking the ball on its hand)"""
+        """Make NAO capable of giving a red ball (Touch the hand after taking the ball on its hand)"""
         names = ["RShoulderPitch", "RWristYaw", "RElbowYaw"]
         angles = [0.26, 1.22, 1.74]
         fraction_max_speed = 0.2
@@ -99,8 +106,8 @@ class Nao(ALModule):
         time.sleep(2.0)
         motion_service.setAngles("RHand", 1.00, fraction_max_speed)
         time.sleep(1.0)
-        self.memory_service.subscribeToEvent("MiddleTactilTouched", self.name,
-                                             "head_touched")
+        self.memory_service.subscribeToEvent("HandRightBackTouched", self.name,
+                                             "hand_touched")
         while self.not_touched:
             time.sleep(1.0)
             # self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
@@ -184,25 +191,28 @@ class Nao(ALModule):
 
     def find_person(self, name):
         """Make NAO find a person position given the target name"""
+        #name is always Face
+        #mode is Move
         tracker = ALProxy("ALTracker")
-        motion_service = ALProxy("ALMotion")
-        motion_service.wakeUp()
-        self.tts_service.say("Ciao")
-        target_name = name
+        target_name = "Face"
         face_width = 12
-        tracker.registerTarget("Face", face_width)
+        tracker.registerTarget(name, face_width)
         tracker.setMode("Move")
         tracker.setEffector("None")
-        tracker.track("Face")
-        while not tracker.isNewTargetDetected():
-            time.sleep(1.0)
-        time.sleep(1.0)
-        self.tts_service.say(name + " trovato")
+        tracker.setTimeout(2)
+        tracker.track(target_name)
+        too_far=True 
+        while too_far:
+            position = tracker.getTargetPosition(FRAME_ROBOT)
+            if position != []:
+                distance = math.sqrt(position[0]**2 + position[1]**2)
+                if distance < 0.60:
+                    too_far=False
+        self.tts_service.say("Arrivato")
         time.sleep(2.0)
-        position = tracker.getTargetPosition(2)
-        print "Target " + name + " found at " 
-        print position
-
+        print "Target " + name + " found at " + position
+        tracker.stopTracker()
+        tracker.unregisterAllTargets()
         return position
 
 
@@ -219,10 +229,10 @@ class Nao(ALModule):
         self.memory_service.unsubscribeToEvent("redBallDetected", self.name)
         self.not_detected = False
 
-    def head_touched(self, event_name, value):
-        """Callback method for MiddleTactilTouched event"""
+    def hand_touched(self, event_name, value):
+        """Callback method for HandRightBackTouched event"""
         print "Event raised: " + event_name + " " + str(value)
-        self.memory_service.unsubscribeToEvent("MiddleTactilTouched",
+        self.memory_service.unsubscribeToEvent("HandRightBackTouched",
                                                self.name)
         self.not_touched = False
 
@@ -238,32 +248,10 @@ def main():
     parser.add_argument(
         "--port", type=int, default=9559, help="Naoqi port number")
     args = parser.parse_args()
-    my_broker = ALBroker(
-        "myBroker",
-        "0.0.0.0",  # listen to anyone
-        0,  # find a free port and use it
-        args.ip,  # parent broker IP
-        args.port)  # parent broker port
-    print "ALBroker successfully started."
-    print "Use Ctrl+c to stop this script       ."
-
+    global nao
+    nao = Nao(args.ip, args.port)
     try:
-        global nao
-        nao = Nao()
-        nao.go_to_posture("Stand")
-        #print(nao.get_posture())
-        #print(nao.hand_full())
-
-        
-        #nao.take_ball()
-        nao.redball_follower(False)
-        #nao.redball_follower_1(True)
-        #position = nao.find_person("Enrico")
-    
-        time.sleep(2.0)
-        #nao.move(position)
-
-        
+        nao.take_ball()
         while True:
             time.sleep(1.0)
     except KeyboardInterrupt:
@@ -271,7 +259,7 @@ def main():
         print "Interrupted by user"
         print "Stopping..."
     finally:
-        my_broker.shutdown()
+        nao.disconnect()
 
 
 if __name__ == "__main__":

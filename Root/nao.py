@@ -3,8 +3,10 @@ import time
 import math
 from naoqi import ALBroker, ALModule, ALProxy
 
+
 nao = None
 FRAME_TORSO = 0
+FRAME_ROBOT = 2
 
 
 class Nao(ALModule):
@@ -47,7 +49,9 @@ class Nao(ALModule):
         # calibrare il valore in base alla palla
         if hand_angle[0] < self.hand_full_threshold:
             result = False
+            self.tts_service.say("Non ho nulla in mano")
         else:
+            self.tts_service.say("Ho la mano occupata")
             result = True
         return result
 
@@ -56,30 +60,33 @@ class Nao(ALModule):
         """Move NAO to a position relative to NAO frame"""
         x = destination[0]
         y = destination[1]
-        theta = math.pi / 2  # nel caso ci vengano fornite solo x e y senza theta
+        # TODO  # nel caso ci vengano fornite solo x e y senza theta
+        theta = math.atan(y / x)
         motion_service = ALProxy("ALMotion")
         motion_service.moveInit()
-        motion_service.moveTo(x, y, 0.0)
+        motion_service.moveTo(x, y, theta)
         self.tts_service.say("Sono arrivata")
 
     def take_ball(self):
-        """Make NAO capable of taking a red ball (Touch the head after putting the ball on its hand)"""
+        """Make NAO capable of taking a red ball (Touch the hand after putting the ball on its hand)"""
         """LAST IMPROVEMENT: NAO follow the ball with the head"""
-        """TODO: NAO recognize to have the ball without touching the head"""
+        """TODO: NAO recognize to have the ball without touching the hand"""
         names = ["RShoulderPitch", "RWristYaw", "RElbowYaw", "RHand"]
-        angles = [0.26, 1.22, 1.74, 1.00]
+        angles = [0.441, 1.815,1.335 ,1.00]
         fraction_max_speed = 0.2
-        self.redball_follower(True)
+        # self.wait_redball()
+        self.tts_service.say("Vedo la palla")
+        # self.redball_follower(True)
         time.sleep(2.0)
         motion_service = ALProxy("ALMotion")
         motion_service.setStiffnesses("RArm", 1.0)
         motion_service.setAngles(names, angles, fraction_max_speed)
         time.sleep(2.0)
-        self.memory_service.subscribeToEvent("MiddleTactilTouched", self.name,
-                                             "head_touched")
+        self.memory_service.subscribeToEvent("HandRightBackTouched", self.name,
+                                             "hand_touched")
         while self.not_touched:
-            time.sleep(4.0)
-            #self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
+            time.sleep(2.0)
+            # self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
         self.not_touched = True
         self.redball_follower(False)
         motion_service.setAngles("RHand", 0.00, fraction_max_speed)
@@ -91,9 +98,9 @@ class Nao(ALModule):
         motion_service.setStiffnesses("RArm", 0.0)
 
     def give_ball(self):
-        """Make NAO capable of giving a red ball (Touch the head after taking the ball on its hand)"""
+        """Make NAO capable of giving a red ball (Touch the hand after taking the ball on its hand)"""
         names = ["RShoulderPitch", "RWristYaw", "RElbowYaw"]
-        angles = [0.26, 1.22, 1.74]
+        angles = [0.441, 1.815,1.335]
         fraction_max_speed = 0.2
         motion_service = ALProxy("ALMotion")
         motion_service.setStiffnesses("RArm", 1.0)
@@ -101,11 +108,11 @@ class Nao(ALModule):
         time.sleep(2.0)
         motion_service.setAngles("RHand", 1.00, fraction_max_speed)
         time.sleep(1.0)
-        self.memory_service.subscribeToEvent("MiddleTactilTouched", self.name,
-                                             "head_touched")
+        self.memory_service.subscribeToEvent("HandRightBackTouched", self.name,
+                                             "hand_touched")
         while self.not_touched:
             time.sleep(1.0)
-            #self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
+            # self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
         self.not_touched = True
         self.go_to_posture("Stand")
 
@@ -127,37 +134,84 @@ class Nao(ALModule):
         self.go_to_posture("StandInit")
         if start:
             target_name = "RedBall"
-            diameter_ball = 0.06  # da controllare
+            diameter_ball = 0.04  # da controllare
             tracker.registerTarget(target_name, diameter_ball)
             tracker.setMode(mode)
             tracker.setEffector("None")
             tracker.track(target_name)
-            while not tracker.isNewTargetDetected():
-                print "."
-            time.sleep(2.0)
-            position = tracker.getTargetPosition(2)
-            print position
+            # while not tracker.isNewTargetDetected():
+            #     print "."
+            # time.sleep(2.0)
+            # position = tracker.getTargetPosition(2)
+            # print position
+            # tracker.stopTracker()
+            # tracker.unregisterAllTargets()
+            # return position
+        else:
             tracker.stopTracker()
             tracker.unregisterAllTargets()
-            return position
+
+    def redball_follower_1(self, start, mode="Head"):
+        """Make NAO track a redball using mode selected"""
+        names = ["RShoulderPitch", "RWristYaw", "RElbowYaw", "RHand"]
+        angles = [0.26, 1.22, 1.74, 1.00]
+        fraction_max_speed = 0.2
+        tracker = ALProxy("ALTracker")
+        motion_service = ALProxy("ALMotion")
+        motion_service.wakeUp()
+        self.go_to_posture("StandInit")
+        motion_service.setStiffnesses("RArm", 1.0)
+        motion_service.setAngles(names, angles, fraction_max_speed)
+        time.sleep(2.0)
+        if start:
+            target_name = "RedBall"
+            diameter_ball = 0.04  # da controllare
+            tracker.registerTarget("target_name", diameter_ball)
+            tracker.setMode(mode)
+            tracker.setEffector("None")
+            tracker.track(target_name)
+            ball_position = tracker.getTargetPosition(2)
+            hand_position = motion_service.getPosition("RHand", 0, False)
+            try:
+                while True:
+                    ball_position = tracker.getTargetPosition(2)
+                    diff_x = ball_position[0] - hand_position[0]
+                    diff_y = ball_position[1] - hand_position[1]
+                    diff_z = ball_position[2] - hand_position[2]
+                    print "Error estimated: " + str(ball_position[0]) + " " + str(ball_position[1]) + " " + str(ball_position[2])
+                    time.sleep(2.0)
+            except KeyboardInterrupt:
+                print
+                print "Interrupted by user"
+                print "Stopping..."
+            finally:
+                tracker.stopTracker()
+                tracker.unregisterAllTargets()
         else:
             tracker.stopTracker()
             tracker.unregisterAllTargets()
 
     def find_person(self, name):
         """Make NAO find a person position given the target name"""
+        # name is always Face
+        #mode is Move
         tracker = ALProxy("ALTracker")
-        target_name = name
+        target_name = "Face"
         face_width = 12
         tracker.registerTarget(name, face_width)
-        tracker.setMode("Head")
+        tracker.setMode("Move")
         tracker.setEffector("None")
+        tracker.setTimeout(2)
         tracker.track(target_name)
-        while not tracker.isNewTargetDetected():
-            pass
-        self.tts_service.say("Trovato")
+        too_far = True
+        while too_far:
+            position = tracker.getTargetPosition(FRAME_ROBOT)
+            if position != []:
+                distance = math.sqrt(position[0]**2 + position[1]**2)
+                if distance < 0.60:
+                    too_far = False
+        self.tts_service.say("Arrivato")
         time.sleep(2.0)
-        position = tracker.getTargetPosition(2)
         print "Target " + name + " found at " + position
         tracker.stopTracker()
         tracker.unregisterAllTargets()
@@ -174,39 +228,30 @@ class Nao(ALModule):
         # print pos
         print event_name
         print value
-
         self.memory_service.unsubscribeToEvent("redBallDetected", self.name)
         self.not_detected = False
 
-    def head_touched(self, event_name, value):
-        """Callback method for MiddleTactilTouched event"""
+    def hand_touched(self, event_name, value):
+        """Callback method for HandRightBackTouched event"""
         print "Event raised: " + event_name + " " + str(value)
-        self.memory_service.unsubscribeToEvent("MiddleTactilTouched",
+        self.memory_service.unsubscribeToEvent("HandRightBackTouched",
                                                self.name)
         self.not_touched = False
-
-    def disconnect(self):
-        self.my_broker.shutdown()
-        print "Disconnecting...."
 
 
 def main():
     """A simple main"""
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--ip",
-        type=str,
-        default="127.0.0.1",
-        help="Robot IP address. On robot or Local Naoqi: use '127.0.0.1'.")
+    parser.add_argument("--ip", type=str, default="127.0.0.1",
+                        help="Robot IP address. On robot or Local Naoqi: use '127.0.0.1'.")
     parser.add_argument(
         "--port", type=int, default=9559, help="Naoqi port number")
     args = parser.parse_args()
     global nao
     nao = Nao(args.ip, args.port)
     try:
-        # nao.redball_follower(False)
-        position = nao.redball_follower(True)
-        nao.move(position)
+        nao.go_to_posture("Stand")
+        nao.take_ball()
         while True:
             time.sleep(1.0)
     except KeyboardInterrupt:
