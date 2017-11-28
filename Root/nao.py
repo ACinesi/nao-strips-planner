@@ -152,6 +152,7 @@ class Nao(ALModule):
             tracker.unregisterAllTargets()
 
     def redball_follower_1(self, start, mode="Head"):
+        #TODO check estimation error of the ball position respect to the hand(through the camera)
         """Make NAO track a redball using mode selected"""
         names = ["RShoulderPitch", "RWristYaw", "RElbowYaw", "RHand"]
         angles = [0.26, 1.22, 1.74, 1.00]
