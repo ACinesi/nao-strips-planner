@@ -80,7 +80,21 @@ def main():
         plan = sp.main()
         print "\n"
 
-    nao.disconnect()
+        print "### NAO CLASS ###"
+        #elaborare il piano ()
+
+        try:
+
+            for command in plan:         
+                nao.switcher(command)
+      
+        except KeyboardInterrupt:
+            print
+            print "Interrupted by user"
+            print "Stopping..."
+        finally:
+            nao.disconnect()
+
 
 
 if __name__ == "__main__":

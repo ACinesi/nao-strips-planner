@@ -243,12 +243,12 @@ class Nao(ALModule):
         self.my_broker.shutdown()
         print "Disconnecting...."
 
-    def switcher(self,function, arg):
-        switcher = {'move': self.move, 'take_ball': self.take_ball, 'give_ball':self.give_ball,'find_person': self.find_person}
+    def switcher(self,function):
+        switcher = { 'take_ball': self.take_ball, 'give_ball':self.give_ball,'find_person': self.find_person}
         # Get the function from switcher dictionary
         func = switcher.get(function)
         # Execute the function
-        result = func(arg)
+        result = func()
         return result
 
 
