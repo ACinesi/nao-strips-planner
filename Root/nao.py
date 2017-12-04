@@ -75,9 +75,9 @@ class Nao(ALModule):
         names = ["RShoulderPitch", "RWristYaw", "RElbowYaw", "RHand"]
         angles = [0.441, 1.815,1.335 ,1.00]
         fraction_max_speed = 0.2
-        # self.wait_redball()
+        self.wait_redball()
         self.tts_service.say("Vedo la palla")
-        # self.redball_follower(True)
+        self.redball_follower(True)
         time.sleep(2.0)
         motion_service = ALProxy("ALMotion")
         motion_service.setStiffnesses("RArm", 1.0)
@@ -274,7 +274,7 @@ class Nao(ALModule):
         print "Disconnecting...."
 
     def switcher(self,function):
-        switcher = { 'TakeBall': self.find_ball, 'GiveBall':self.find_ball,'FindPerson': self.find_ball,'FindBall':self.find_ball}
+        switcher = { 'TakeBall': self.take_ball, 'GiveBall':self.give_ball,'FindPerson': self.find_person,'FindBall':self.find_ball}
         result=None
         # Get the function from switcher dictionary
         func = switcher.get(function)
