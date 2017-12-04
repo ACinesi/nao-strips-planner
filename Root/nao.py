@@ -30,7 +30,8 @@ class Nao(ALModule):
     def get_posture(self):
         """Get current NAO posture"""
         posture_service = ALProxy("ALRobotPosture")
-        posture = posture_service.getPosture()
+        posture = posture_service.getPostureFamily()
+        print posture
         return posture
 
     def go_to_posture(self, posture_name):
@@ -273,7 +274,7 @@ class Nao(ALModule):
         print "Disconnecting...."
 
     def switcher(self,function):
-        switcher = { 'TakeBall': self.take_ball, 'GiveBall':self.give_ball,'FindPerson': self.find_person,'GiveBall':self.find_ball}
+        switcher = { 'TakeBall': self.find_ball, 'GiveBall':self.find_ball,'FindPerson': self.find_ball,'FindBall':self.find_ball}
         result=None
         # Get the function from switcher dictionary
         func = switcher.get(function)

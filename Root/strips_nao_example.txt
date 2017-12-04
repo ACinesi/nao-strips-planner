@@ -1,5 +1,5 @@
-Initial state:  At(A), Posture(high), Hand(empty)
-Goal state:     PersonAt(enrico,B), At(B),Bring(ball)                                         //L'ordine è fondamentale, il plan subisce cambiamenti
+Initial state:  At(A), Posture(high), Hand(full),Bring(ball)
+Goal state:     PersonAt(enrico,B), !Bring(ball)               //L'ordine è fondamentale, il plan subisce cambiamenti
 
 //Goal list:
 //PersonAt(nome,B), At(B)       vai da <nome>
@@ -30,12 +30,12 @@ Actions:
         // find a person
         FindPerson(Name,Location)
         Preconditions:  Posture(high)
-        Postconditions: PersonAt(Name,Location)
+        Postconditions: PersonAt(Name,Location),At(Location)
 
         // find a ball
         FindBall(Location)
         Preconditions:  Posture(high),Hand(empty)
-        Postconditions: BallAt(Location)
+        Postconditions: BallAt(Location),At(Location)
 
    
         

@@ -1,5 +1,7 @@
 import argparse
+from colorama import init,Fore, Back, Style
 import time
+import traceback
 import strips_planning as sp
 import speech_to_text as stt
 import text_tagger as tt
@@ -22,13 +24,14 @@ def main():
     # Instanzio Nao, la connessione avviene automaticamente
     nao = Nao(args.ip, args.port)
     # Inizializzo il microfono
-    print "### INIT SPEECH-TO-TEXT ###"
+    print (Fore.GREEN + "### INIT SPEECH-TO-TEXT ###")
+    print(Style.RESET_ALL)
     stt.init()
     # Apro un file strips di riferimento e quello che poi utlizzer per il planner
-
     # Inizio la routine: ascolto comando-> ottengo il piano -> eseguo il piano
     while True:
-        print "### SESSION ###"
+        print (Fore.GREEN + "### SESSION ###")
+        print(Style.RESET_ALL)
         source_strips = open("strips_nao_example.txt", "r")
         my_strips = open("strips_nao_test.txt", "w")
         # Inizializzo il file strips con Initial State e Goal State
@@ -36,8 +39,8 @@ def main():
             if index == 0:
                 init_state_line = "Initial state: At(A)"
                 posture = nao.get_posture()
-                if posture == "Stand":
-                    posture_line = "Posture(high)"
+                if posture == "Standing":
+                    posture_line = "Posture(high)" #potrebbe essere anche in un altra posizione 
                 else:
                     posture_line = "Posture(low)"
                 init_state_line = init_state_line + "," + posture_line
@@ -50,17 +53,19 @@ def main():
                 print init_state_line
                 my_strips.write(init_state_line + "\n")
             elif index == 1:
-                print "### SPEECH_TO_TEXT ###"
+                print (Fore.GREEN + "### SPEECH_TO_TEXT ###")
+                print(Style.RESET_ALL)
                 error = True
                 while error:
                     error = False
                     try:
                         speech = stt.listen()
                     except Exception as e:
-                        print "Something was wrong with speech recognizing.Retrying...."
+                        print "Something was wrong with speech recognizing.Retrying.."
                         error = True
                 #speech = "prendi la palla"
-                print "### TEXT ANALYSIS ###"
+                print (Fore.GREEN+"### TEXT ANALYSIS ###")
+                print(Style.RESET_ALL)
                 goals = tt.strips_goals(speech)
                 goal_state_line = "Goal state: "
                 if goals != "":
@@ -69,32 +74,34 @@ def main():
                 my_strips.write(goal_state_line)
             else:
                 my_strips.write(line)
-
+                
         my_strips.flush()
         source_strips.flush()
         my_strips.close()
         source_strips.close()
         time.sleep(1)
         # Ottengo il piano(lista di stringhe)
-        print "### STRIPS_PLANNER ###"
+        print (Fore.GREEN+"### STRIPS_PLANNER ###")
+        print(Style.RESET_ALL)
         plan = sp.main()
-        print "\n"
-
-        print "### NAO CLASS ###"
+        print plan
+        print (Fore.GREEN+"### NAO CLASS ###")
+        print(Style.RESET_ALL)
         # elaborare il piano ()
-
         try:
-
-            for command in plan:
-                caratteri = list(command)
-                count = 0
-                for x in caratteri:
-                    if x != "(":
-                        count += 1
-                    else:
-                        break
-                # invoca un comando alla volta
-                nao.switcher(command[:count])
+            if plan!=None:
+                for command in plan:
+                    caratteri = list(command)
+                    count = 0
+                    for x in caratteri:
+                        if x != "(":
+                            count += 1
+                        else:
+                            break
+                    # invoca un comando alla volta
+                    nao.switcher(command[:count])
+            else :
+                pass
 
         except KeyboardInterrupt:
             print
@@ -104,4 +111,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        init()
+        main()
+    except IOError as e:
+        traceback.print_exc()
+        

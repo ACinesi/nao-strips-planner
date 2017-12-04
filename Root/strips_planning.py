@@ -177,8 +177,8 @@ def create_world(filename):
     postcondRegex = re.compile('post(conditions)?:', re.IGNORECASE)
     pstate = ParseState.INITIAL
     cur_action = None
-    # filename="strips_nao_test.txt"
-    filename = None
+    filename="strips_nao_test.txt"
+    #filename = None
     if filename is None:
         filename = sys.argv[1]
 
