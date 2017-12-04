@@ -45,7 +45,7 @@ def strips_goals(text):
     trovare = Node("trovare")
     palla = Node("palla", True, "!Bring(ball)")
     palla2 = Node("palla", True, "Bring(ball)")
-    enrico = Node("enrico", True, "PersonAt(enrico,B), At(B)")
+    enrico = Node("enrico", True, "PersonAt(enrico,B)")
     root.add_child(dare)
     root.add_child(prendere)
     root.add_child(trovare)
@@ -62,6 +62,7 @@ def strips_goals(text):
                     currentNode = root
                 else:
                     currentNode = children
+    goals.reverse()#TODO
     temp_goals = ""
     if len(goals) > 0:
         for index, goal in enumerate(goals):

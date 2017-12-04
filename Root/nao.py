@@ -192,14 +192,14 @@ class Nao(ALModule):
             tracker.stopTracker()
             tracker.unregisterAllTargets()
 
-    def find_person(self, name):
+    def find_person(self):
         """Make NAO find a person position given the target name"""
         # name is always Face
         #mode is Move
         tracker = ALProxy("ALTracker")
         target_name = "Face"
         face_width = 12
-        tracker.registerTarget(name, face_width)
+        tracker.registerTarget(target_name, face_width)
         tracker.setMode("Move")
         tracker.setEffector("None")
         tracker.setTimeout(2)
@@ -209,14 +209,43 @@ class Nao(ALModule):
             position = tracker.getTargetPosition(FRAME_ROBOT)
             if position != []:
                 distance = math.sqrt(position[0]**2 + position[1]**2)
-                if distance < 0.60:
+                if distance < 0.40:
                     too_far = False
+                    print "Target reached"
         self.tts_service.say("Arrivato")
         time.sleep(2.0)
-        print "Target " + name + " found at " + position
         tracker.stopTracker()
         tracker.unregisterAllTargets()
         return position
+
+    def find_ball(self):
+        """Make NAO find a ball"""
+        print "Find ball"
+        # # name is always Face
+        # #mode is Move
+        # tracker = ALProxy("ALTracker")
+        # target_name = "RedBall"
+        # diameter_ball = 0.4
+        # tracker.registerTarget(target_name, diameter_ball)
+        # tracker.setMode("Move")
+        # tracker.setEffector("None")
+        # tracker.setTimeout(2)
+        # tracker.track(target_name)
+        # too_far = True
+        # while too_far:
+        #     position = tracker.getTargetPosition(FRAME_ROBOT)
+        #     if position != []:
+        #         distance = math.sqrt(position[0]**2 + position[1]**2)
+        #         if distance < 0.30:
+        #             too_far = False
+        #             print "Target reached"
+        # self.tts_service.say("Arrivato")
+        # time.sleep(2.0)
+        # tracker.stopTracker()
+        # tracker.unregisterAllTargets()
+        # return position
+
+        
 
 
 # Callback
@@ -244,11 +273,14 @@ class Nao(ALModule):
         print "Disconnecting...."
 
     def switcher(self,function):
-        switcher = { 'take_ball': self.take_ball, 'give_ball':self.give_ball,'find_person': self.find_person}
+        switcher = { 'TakeBall': self.take_ball, 'GiveBall':self.give_ball,'FindPerson': self.find_person,'GiveBall':self.find_ball}
+        result=None
         # Get the function from switcher dictionary
         func = switcher.get(function)
-        # Execute the function
-        result = func()
+        if func != None:
+            # Execute the function
+            result = func()
+    
         return result
 
 

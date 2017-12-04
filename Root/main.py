@@ -21,11 +21,11 @@ def main():
     args = parser.parse_args()
     # Instanzio Nao, la connessione avviene automaticamente
     nao = Nao(args.ip, args.port)
-    #Inizializzo il microfono
+    # Inizializzo il microfono
     print "### INIT SPEECH-TO-TEXT ###"
     stt.init()
     # Apro un file strips di riferimento e quello che poi utlizzer per il planner
-    
+
     # Inizio la routine: ascolto comando-> ottengo il piano -> eseguo il piano
     while True:
         print "### SESSION ###"
@@ -57,8 +57,8 @@ def main():
                     try:
                         speech = stt.listen()
                     except Exception as e:
-                        print "Something was wrong with speech recognizing.Retrying...."  
-                        error = True  
+                        print "Something was wrong with speech recognizing.Retrying...."
+                        error = True
                 #speech = "prendi la palla"
                 print "### TEXT ANALYSIS ###"
                 goals = tt.strips_goals(speech)
@@ -81,20 +81,26 @@ def main():
         print "\n"
 
         print "### NAO CLASS ###"
-        #elaborare il piano ()
+        # elaborare il piano ()
 
         try:
 
-            for command in plan:         
-                nao.switcher(command)
-      
+            for command in plan:
+                caratteri = list(command)
+                count = 0
+                for x in caratteri:
+                    if x != "(":
+                        count += 1
+                    else:
+                        break
+                # invoca un comando alla volta
+                nao.switcher(command[:count])
+
         except KeyboardInterrupt:
             print
             print "Interrupted by user"
             print "Stopping..."
-        finally:
             nao.disconnect()
-
 
 
 if __name__ == "__main__":

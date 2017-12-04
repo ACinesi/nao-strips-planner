@@ -1,5 +1,5 @@
-Initial state:  At(A), Posture(low), Hand(full), Bring(ball)
-Goal state:     PersonAt(enrico,B), At(B)                                                //L'ordine è fondamentale, il plan subisce cambiamenti
+Initial state:  At(A), Posture(high), Hand(empty)
+Goal state:     PersonAt(enrico,B), At(B),Bring(ball)                                         //L'ordine è fondamentale, il plan subisce cambiamenti
 
 //Goal list:
 //PersonAt(nome,B), At(B)       vai da <nome>

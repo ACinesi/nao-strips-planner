@@ -1,0 +1,46 @@
+Initial state:  At(A), Posture(high), Hand(full),Bring(ball)
+Goal state:     PersonAt(enrico,B), !Bring(ball)               //L'ordine è fondamentale, il plan subisce cambiamenti
+
+//Goal list:
+//PersonAt(nome,B), At(B)       vai da <nome>
+//Bring(ball)                   prendi la palla
+//!Bring(ball)                  lascia la palla
+
+Actions:
+        // move from X to Y
+        Move(X, Y)
+        Preconditions:  At(X), Posture(high)
+        Postconditions: !At(X), At(Y)
+               
+        // go to posture <Post>
+        GoToPosture(Post,Location)
+        Preconditions:  At(Location), !Posture(Post)
+        Postconditions: Posture(Post)
+               
+        // take the ball
+        TakeBall(Location)
+        Preconditions:  BallAt(Location), At(Location),Hand(empty), Posture(high)
+        Postconditions: Hand(full), !Hand(empty), Bring(ball)
+
+        // give the ball
+        GiveBall(Location)
+        Preconditions:  Bring(ball), Hand(full), Posture(high), At(Location)
+        Postconditions: !Bring(ball), !Hand(full), Hand(empty)
+
+        // find a person
+        FindPerson(Name,Location)
+        Preconditions:  Posture(high)
+        Postconditions: PersonAt(Name,Location),At(Location)
+
+        // find a ball
+        FindBall(Location)
+        Preconditions:  Posture(high),Hand(empty)
+        Postconditions: BallAt(Location),At(Location)
+
+   
+        
+
+
+
+
+        
