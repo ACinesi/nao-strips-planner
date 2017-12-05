@@ -210,41 +210,40 @@ class Nao(ALModule):
             position = tracker.getTargetPosition(FRAME_ROBOT)
             if position != []:
                 distance = math.sqrt(position[0]**2 + position[1]**2)
-                if distance < 0.40:
+                print distance
+                if distance < 0.50:
                     too_far = False
                     print "Target reached"
+        too_far=True
         self.tts_service.say("Arrivato")
         time.sleep(2.0)
         tracker.stopTracker()
         tracker.unregisterAllTargets()
-        return position
 
     def find_ball(self):
         """Make NAO find a ball"""
-        print "Find ball"
-        # # name is always Face
-        # #mode is Move
-        # tracker = ALProxy("ALTracker")
-        # target_name = "RedBall"
-        # diameter_ball = 0.4
-        # tracker.registerTarget(target_name, diameter_ball)
-        # tracker.setMode("Move")
-        # tracker.setEffector("None")
-        # tracker.setTimeout(2)
-        # tracker.track(target_name)
-        # too_far = True
-        # while too_far:
-        #     position = tracker.getTargetPosition(FRAME_ROBOT)
-        #     if position != []:
-        #         distance = math.sqrt(position[0]**2 + position[1]**2)
-        #         if distance < 0.30:
-        #             too_far = False
-        #             print "Target reached"
-        # self.tts_service.say("Arrivato")
-        # time.sleep(2.0)
-        # tracker.stopTracker()
-        # tracker.unregisterAllTargets()
-        # return position
+        tracker = ALProxy("ALTracker")
+        target_name = "RedBall"
+        diameter_ball = 0.4
+        tracker.registerTarget(target_name, diameter_ball)
+        tracker.setMode("Move")
+        tracker.setEffector("None")
+        tracker.setTimeout(2)
+        tracker.track(target_name)
+        too_far = True
+        while too_far:
+            position = tracker.getTargetPosition(FRAME_ROBOT)
+            if position != []:
+                distance = math.sqrt(position[0]**2 + position[1]**2)
+                print distance
+                if distance < 0.40:
+                    too_far = False
+                    print "Target reached"
+        too_far=True
+        self.tts_service.say("Arrivato")
+        time.sleep(2.0)
+        tracker.stopTracker()
+        tracker.unregisterAllTargets()
 
         
 
@@ -253,12 +252,7 @@ class Nao(ALModule):
 
     def redball_detected(self, event_name, value):
         """Callback method for redBallDetected event"""
-        # motion = ALProxy("ALMotion")
-        # pos = motion.getPosition("RHand",0,False)
-        # time.sleep(2.0)
-        # print pos
-        print event_name
-        print value
+        print "Event raised: " + event_name + " " + str(value)
         self.memory_service.unsubscribeToEvent("redBallDetected", self.name)
         self.not_detected = False
 
@@ -274,14 +268,14 @@ class Nao(ALModule):
         print "Disconnecting...."
 
     def switcher(self,function):
-        switcher = { 'TakeBall': self.take_ball, 'GiveBall':self.give_ball,'FindPerson': self.find_person,'FindBall':self.find_ball}
+        switcher = { 'TakeBall': self.take_ball, 'GiveBall':self.give_ball,'FindPerson': self.find_person ,'FindBall':self.find_ball}
         result=None
         # Get the function from switcher dictionary
         func = switcher.get(function)
         if func != None:
             # Execute the function
             result = func()
-    
+     
         return result
 
 

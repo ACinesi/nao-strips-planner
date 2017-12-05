@@ -24,14 +24,14 @@ def main():
     # Instanzio Nao, la connessione avviene automaticamente
     nao = Nao(args.ip, args.port)
     # Inizializzo il microfono
-    print (Fore.GREEN + "### INIT SPEECH-TO-TEXT ###")
-    print(Style.RESET_ALL)
+    print  Fore.GREEN + "### INIT SPEECH-TO-TEXT ###" 
+    print Style.RESET_ALL 
     stt.init()
     # Apro un file strips di riferimento e quello che poi utlizzer per il planner
     # Inizio la routine: ascolto comando-> ottengo il piano -> eseguo il piano
     while True:
-        print (Fore.GREEN + "### SESSION ###")
-        print(Style.RESET_ALL)
+        print  Fore.GREEN + "### SESSION ###" 
+        print Style.RESET_ALL 
         source_strips = open("strips_nao_example.txt", "r")
         my_strips = open("strips_nao_test.txt", "w")
         # Inizializzo il file strips con Initial State e Goal State
@@ -64,14 +64,16 @@ def main():
                         print "Something was wrong with speech recognizing.Retrying.."
                         error = True
                 #speech = "prendi la palla"
-                print (Fore.GREEN+"### TEXT ANALYSIS ###")
-                print(Style.RESET_ALL)
+                print  Fore.GREEN+"### TEXT ANALYSIS ###" 
+                print Style.RESET_ALL 
                 goals = tt.strips_goals(speech)
                 goal_state_line = "Goal state: "
                 if goals != "":
                     goal_state_line += goals
-                print goal_state_line
+                    print goal_state_line
+
                 my_strips.write(goal_state_line)
+            
             else:
                 my_strips.write(line)
                 
@@ -81,12 +83,11 @@ def main():
         source_strips.close()
         time.sleep(1)
         # Ottengo il piano(lista di stringhe)
-        print (Fore.GREEN+"### STRIPS_PLANNER ###")
-        print(Style.RESET_ALL)
+        print Fore.GREEN+"### STRIPS_PLANNER ###" 
+        print Style.RESET_ALL 
         plan = sp.main()
-        print plan
-        print (Fore.GREEN+"### NAO CLASS ###")
-        print(Style.RESET_ALL)
+        print  Fore.GREEN+"### NAO CLASS ###" 
+        print Style.RESET_ALL 
         # elaborare il piano ()
         try:
             if plan!=None:
@@ -108,6 +109,10 @@ def main():
             print "Interrupted by user"
             print "Stopping..."
             nao.disconnect()
+        finally:
+            print Fore.GREEN+"### END SESSION ###"
+            print "\n"
+            print Style.RESET_ALL
 
 
 if __name__ == "__main__":
