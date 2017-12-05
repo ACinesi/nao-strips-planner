@@ -10,11 +10,12 @@ response = None
 
 def init():
     # Create a TCP / IP socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print "Testing internet...."
     hostname = "google.it"
     global response
-    response = system("ping " + hostname)
+    #response = system("ping " + hostname)
+    response = 0
     if response == 0:
         print "I can reach internet, I'm going to use Google TTS API"
     else:
@@ -42,6 +43,7 @@ def listen():
     except sr.RequestError as e:
         print("Error; {0}".format(e))
     return speech
+
 
 def main():
     init()

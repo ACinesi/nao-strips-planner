@@ -40,9 +40,9 @@ def strips_goals(text):
     lemmas = process_text(text)
     print "Tag words ->", lemmas
     root = Node("root")
-    dare = Node("dare")
+    dare = Node("restituire")
     prendere = Node("prendere")
-    trovare = Node("trovare")
+    trovare = Node("raggiungere")
     palla = Node("palla", True, "!Bring(ball)")
     palla2 = Node("palla", True, "Bring(ball)")
     enrico = Node("enrico", True, "PersonAt(enrico,B)")
