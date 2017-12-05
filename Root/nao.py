@@ -299,7 +299,7 @@ def main():
     global nao
     nao = Nao(args.ip, args.port)
     try:
-        nao.find_ball()
+        nao.redball(False)
         while True:
             time.sleep(1.0)
     except KeyboardInterrupt:
