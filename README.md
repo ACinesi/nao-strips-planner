@@ -4,8 +4,7 @@
   - [Objective](#objective)
 - [How it works](#how-it-works)
 - [Architecture](#architecture)
-- [Qucik start](#quick-start)
-- [Buit with](#built-with)
+- [Quick start](#quick-start)
 - [References](#references)
 
 ## About
@@ -32,11 +31,11 @@ The process is easy :
 
 ![](/images/image2.png)
 
-## Built With
-
-* [Python](https://docs.python.org/2/) - The main language
-* [NAOqi](http://doc.aldebaran.com/2-1/naoqi/index.html) - The programming framework used to program Aldebaran robots.
+## Quick start
 
 ## References 
 
-[Tansey strips planner](https://github.com/tansey/strips)
+* Aldebaran documentation: [NAOqi Python API](http://doc.aldebaran.com/2-1/ref/python-api.html)
+* further information about [NAO](https://www.ald.softbankrobotics.com/en/robots/nao)
+* [Tansey strips planner](https://github.com/tansey/strips)
+* The main language [Python](https://docs.python.org/2/) 
