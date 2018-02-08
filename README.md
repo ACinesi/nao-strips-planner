@@ -31,11 +31,10 @@ The process is easy :
 
 ![](/images/image2.png)
 
-## Quick start
-
 ## References 
 
 * Aldebaran documentation: [NAOqi Python API](http://doc.aldebaran.com/2-1/ref/python-api.html)
+* [Webots](https://www.cyberbotics.com/webots.php) development environment used to simulate NAO 
 * further information about [NAO](https://www.ald.softbankrobotics.com/en/robots/nao)
 * [Tansey STRIPS planner](https://github.com/tansey/strips)
 * The main language [Python](https://docs.python.org/2/) 
