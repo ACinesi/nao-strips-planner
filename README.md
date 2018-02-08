@@ -37,5 +37,5 @@ The process is easy :
 
 * Aldebaran documentation: [NAOqi Python API](http://doc.aldebaran.com/2-1/ref/python-api.html)
 * further information about [NAO](https://www.ald.softbankrobotics.com/en/robots/nao)
-* [Tansey strips planner](https://github.com/tansey/strips)
+* [Tansey STRIPS planner](https://github.com/tansey/strips)
 * The main language [Python](https://docs.python.org/2/) 
