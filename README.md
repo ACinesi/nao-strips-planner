@@ -1,8 +1,8 @@
 # Project Work on Artificial Intelligence 
 
--[About]#about
- -[Objective]#objective
--[How it works]#how-it-works
+- [About](#about)
+  - [Objective](#objective)
+- [How it works](#how-it-works)
 
 ## About
 The aim of this project work on artificial intelligence is to learn how to work with an interactive companion robot and how to deal with the related problems. 
