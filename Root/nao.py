@@ -95,7 +95,7 @@ class Nao(ALModule):
             # self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
         self.not_touched = True
         self.redball_follower(False)
-        motion_service.setAngles("RHand", 0.00, fraction_max_speed)
+        motion_service.setAngles("RHand", 0.00, 0.25)
         time.sleep(2.0)
         names = names[0:3]
         angles = [1.47, 0.11, 1.20]
@@ -115,9 +115,10 @@ class Nao(ALModule):
         motion_service.setAngles("RHand", 1.00, fraction_max_speed)
         self.memory_service.subscribeToEvent("HandRightBackTouched", self.name,
                                              "hand_touched")
+        self.not_touched=True
         while self.not_touched:
-            pass
-            #time.sleep(1.0)
+            #pass
+            time.sleep(1.0)
             # self.memory_service.raiseEvent("MiddleTactilTouched", 1.0)
         self.not_touched = True
         self.go_to_posture("Stand")
@@ -229,7 +230,7 @@ class Nao(ALModule):
         """Make NAO find a ball"""
         tracker = ALProxy("ALTracker")
         target_name = "RedBall"
-        diameter_ball = 0.40 #0.04
+        diameter_ball = 0.04 #0.04
         tracker.registerTarget(target_name, diameter_ball)
         tracker.setMode("Move")
         tracker.setEffector("None")
@@ -243,14 +244,14 @@ class Nao(ALModule):
                 distance = math.sqrt(math.pow(position[0],2) + math.pow(position[1],2))
                 print position
                 print distance
-                if distance < 2.30: #0.50
+                if distance < 0.25: #0.50
                     too_far = False
                     tracker.stopTracker()
                     tracker.unregisterAllTargets()
                     print "Target reached"
         too_far=True
         time.sleep(1.0)
-        self.tts_service.say("Arrivato")
+        self.tts_service.say("Trovata")
 
         
 
