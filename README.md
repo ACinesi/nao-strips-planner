@@ -4,7 +4,6 @@
   - [Objective](#objective)
 - [How it works](#how-it-works)
 - [Architecture](#architecture)
-- [Quick start](#quick-start)
 - [References](#references)
 
 ## About
