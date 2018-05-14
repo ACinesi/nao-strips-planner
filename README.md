@@ -23,7 +23,7 @@ The humanoid robot we are taking into account is [NAO H25 IMAGE](http://doc.alde
 ## How it works
 The process is easy :
 
-![PROCESS IMAGE](/images/image1.png )
+![PROCESS IMAGE](/images/image1.png)
 
 
 ## Architecture 
